@@ -5,10 +5,15 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 app.use(cors());
 
-// Routes redirecting to respective microservices
-app.use('/api/auth', createProxyMiddleware({ target: 'http://localhost:5001', changeOrigin: true }));
-app.use('/api/catalog', createProxyMiddleware({ target: 'http://localhost:5002', changeOrigin: true }));
+// Auth Service එකට යන requests Port 5001 ට යැවීම
+app.use('/api/auth', createProxyMiddleware({ 
+    target: 'http://localhost:5001', 
+    changeOrigin: true 
+}));
 
-app.listen(5000, () => {
-    console.log('API Gateway is running on port 5000');
+// අනෙකුත් members ලාගේ services හැදුවම මෙතනට පසුව add කරන්න පුළුවන්
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`API Gateway is running on port ${PORT}`);
 });
