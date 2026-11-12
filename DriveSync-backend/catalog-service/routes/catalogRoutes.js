@@ -1,10 +1,10 @@
 import express from 'express';
 import Vehicle from '../models/Vehicle.js';
 
-const router = express.Router();
+const catalogRouter = express.Router();
 
 // Get vehicles with search & filters
-router.get('/', async (req, res) => {
+catalogRouter.get('/', async (req, res) => {
   try {
     const { category, location, minPrice, maxPrice, isAvailable } = req.query;
     let query = {};
@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 });
 
 // Add a new vehicle (for inventory management / admin)
-router.post('/', async (req, res) => {
+catalogRouter.post('/', async (req, res) => {
   try {
     const newVehicle = new Vehicle(req.body);
     const savedVehicle = await newVehicle.save();
@@ -36,4 +36,4 @@ router.post('/', async (req, res) => {
   }
 });
 
-export default router;
+export default catalogRouter;
