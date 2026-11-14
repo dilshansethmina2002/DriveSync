@@ -1,1 +1,29 @@
+:root {
+  --bg-outer: #204EC6;
+  --bg-panel-blue: #2E52B2;
+  --accent-navy-deep: #0B1B75;
+  --glass-overlay: #4C6EC5;
+  --btn-primary: #142654;
+  --btn-primary-hover: #0B1B75;
+  --accent-sky: #5C93E8;
+  --brand-cyan: #4DB6E5;
+  --link-blue: #3B6FD8;
+  --bg-white: #FFFFFF;
+  --input-bg: #F3F5F8;
+  --text-dark: #1E2432;
+  --text-muted: #7A8292;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  background-color: var(--input-bg);
+  color: var(--text-dark);
+}
+
 @import "tailwindcss";
