@@ -1,17 +1,25 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import Login from './pages/Login'; 
+import Register from './pages/Register';
 import VehicleCatalog from './pages/VehicleCatalog';
-// import MyBookings from './pages/MyBookings';
-// import AdminInventory from './pages/AdminInventory';
+
 
 function App() {
   return (
-    <Routes>
-      {/* <Route path="/" element={<Navigate to="/catalog" replace />} /> */}
-      <Route path="/catalog" element={<VehicleCatalog />} />
-      {/* <Route path="/bookings" element={<MyBookings />} />
-      <Route path="/admin/inventory" element={<AdminInventory />} /> */}
-    </Routes>
+    <Router>
+      {/* Toaster එක මෙහි දැමූ විට මුළු ඇප් එකේම ඕනෑම තැනක toast වැඩ කරයි */}
+      <Toaster position="top-right" reverseOrder={false} />
+      
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+
+        <Route path="/catalog" element={<VehicleCatalog />} />
+
+      </Routes>
+    </Router>
   );
 }
 
