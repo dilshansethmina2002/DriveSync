@@ -33,6 +33,12 @@ export const getAllPayments = async (req, res) => {
   res.status(200).json({ success: true, count: payments.length, pagination, data: payments });
 };
 
+// GET /api/payments/stats  (admin dashboard)
+export const getStats = async (req, res) => {
+  const stats = await paymentService.getPaymentStats({ months: Number(req.query.months) || 6 });
+  res.status(200).json({ success: true, data: stats });
+};
+
 // GET /api/payments/:paymentId
 export const getPayment = async (req, res) => {
   const payment = await paymentService.getPaymentById(req.params.paymentId, req.user);

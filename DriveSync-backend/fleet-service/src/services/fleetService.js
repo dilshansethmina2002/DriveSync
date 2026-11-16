@@ -145,6 +145,38 @@ export const getAvailability = async (vehicleId) => {
   };
 };
 
+/** Dashboard numbers: vehicles per status / condition, maintenance due, recent jobs */
+export const getFleetStats = async () => {
+  const [byStatus, byCondition, dueForMaintenance, openMaintenance, costs, recentMaintenance] = await Promise.all([
+    Vehicle.aggregate([{ $group: { _id: '$currentStatus', count: { $sum: 1 } } }]),
+    Vehicle.aggregate([{ $group: { _id: '$condition', count: { $sum: 1 } } }]),
+    Vehicle.countDocuments({ nextMaintenanceDate: mongoose.trusted({ $ne: null, $lte: new Date() }) }),
+    Maintenance.countDocuments({ status: 'In Progress' }),
+    Maintenance.aggregate([{ $group: { _id: null, total: { $sum: '$cost' } } }]),
+    Maintenance.find()
+      .populate('vehicle', 'vehicleName registrationNumber')
+      .sort({ updatedAt: -1 })
+      .limit(6),
+  ]);
+
+  const statusMap = Object.fromEntries(byStatus.map((s) => [s._id, s.count]));
+  const conditionMap = Object.fromEntries(byCondition.map((c) => [c._id, c.count]));
+
+  return {
+    totalVehicles: byStatus.reduce((sum, s) => sum + s.count, 0),
+    available: statusMap.Available || 0,
+    rented: statusMap.Rented || 0,
+    underMaintenance: statusMap['Under Maintenance'] || 0,
+    inactive: statusMap.Inactive || 0,
+    statusBreakdown: ['Available', 'Rented', 'Under Maintenance', 'Inactive'].map((status) => ({ status, count: statusMap[status] || 0 })),
+    conditionBreakdown: ['Excellent', 'Good', 'Fair', 'Poor', 'Damaged'].map((condition) => ({ condition, count: conditionMap[condition] || 0 })),
+    dueForMaintenance,
+    openMaintenance,
+    totalMaintenanceCost: costs[0]?.total || 0,
+    recentMaintenance,
+  };
+};
+
 // -------------------------------------------------------------
 // 3. Update details (name, registration, next maintenance date...)
 // -------------------------------------------------------------
@@ -203,7 +235,7 @@ export const processReturn = async (vehicleId, data, user) => {
   if (data.mileage !== undefined) vehicle.mileage = data.mileage;
   vehicle.lastReturn = {
     bookingId: data.bookingId,
-    returnedAt: new Date(),
+    returnedAt: data.returnDate ? new Date(data.returnDate) : new Date(),
     conditionOnReturn: data.condition,
     mileageOnReturn: vehicle.mileage,
     notes: data.damageNotes || data.notes,

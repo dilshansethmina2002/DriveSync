@@ -83,6 +83,16 @@ export const returnVehicleRules = [
   conditionRule(body('condition').exists().withMessage('condition is required')),
   body('mileage').optional().isInt({ min: 0 }).withMessage('mileage must be 0 or more').toInt(),
   body('needsMaintenance').optional().isBoolean({ strict: true }).withMessage('needsMaintenance must be true or false'),
+  body('returnDate')
+    .optional()
+    .isISO8601()
+    .withMessage('returnDate must be a date like 2026-11-12')
+    .bail()
+    // A date-only value like "2026-11-13" means midnight UTC. In Sri Lanka (UTC+5:30)
+    // that is still "in the future" for the first hours of the day, so allow 1 day of slack.
+    .custom((value) => new Date(value) <= new Date(Date.now() + 24 * 60 * 60 * 1000))
+    .withMessage('returnDate cannot be in the future')
+    .toDate(),
   body('damageNotes').optional().trim().isLength({ max: 1000 }).escape(),
   body('notes').optional().trim().isLength({ max: 1000 }).escape(),
 ];

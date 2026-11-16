@@ -20,6 +20,9 @@ router.use(authenticate);
 const staff = authorize('Admin', 'Service');
 const adminOnly = authorize('Admin');
 
+// ---------------- Dashboard ----------------
+router.get('/stats', staff, vehicles.getStats);
+
 // ---------------- Vehicles ----------------
 router.post('/vehicles', adminOnly, rules.registerVehicleRules, validate, vehicles.registerVehicle);
 router.get('/vehicles', staff, rules.listVehiclesRules, validate, vehicles.listVehicles);

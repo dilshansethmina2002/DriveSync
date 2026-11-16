@@ -31,7 +31,7 @@ app.use(
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    limit: 300, // max requests per IP in that window
+    limit: 1000, // max requests per IP in that window (all browser traffic arrives via the gateway IP)
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     message: { success: false, message: 'Too many requests, please try again later' },

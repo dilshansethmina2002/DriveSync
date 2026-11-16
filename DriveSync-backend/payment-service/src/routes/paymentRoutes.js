@@ -24,6 +24,9 @@ router.post('/', authorize('Customer', 'Admin', 'Service'), rules.createPaymentR
 // Admin: list every payment (paginated, filter by status / type)
 router.get('/', authorize('Admin'), rules.paginationRules, validate, controller.getAllPayments);
 
+// Admin dashboard numbers (must be before "/:paymentId")
+router.get('/stats', authorize('Admin'), rules.statsRules, validate, controller.getStats);
+
 // History by booking / by customer.
 // NOTE: these must be declared BEFORE "/:paymentId", otherwise Express
 // would think "booking" is a paymentId.

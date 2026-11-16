@@ -17,6 +17,12 @@ export const listVehicles = async (req, res) => {
   res.status(200).json({ success: true, count: vehicles.length, pagination, data: vehicles });
 };
 
+// GET /api/fleet/stats
+export const getStats = async (_req, res) => {
+  const stats = await fleetService.getFleetStats();
+  res.status(200).json({ success: true, data: stats });
+};
+
 // GET /api/fleet/vehicles/:vehicleId
 export const getVehicle = async (req, res) => {
   const vehicle = await fleetService.getVehicle(req.params.vehicleId);

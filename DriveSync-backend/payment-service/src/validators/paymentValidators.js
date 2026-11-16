@@ -19,7 +19,11 @@ export const paginationRules = [
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('limit must be between 1 and 100'),
   query('status').optional().isIn(PAYMENT_STATUSES).withMessage(`status must be one of: ${PAYMENT_STATUSES.join(', ')}`),
   query('type').optional().isIn(PAYMENT_TYPES).withMessage(`type must be one of: ${PAYMENT_TYPES.join(', ')}`),
+  query('method').optional().isIn(PAYMENT_METHODS).withMessage(`method must be one of: ${PAYMENT_METHODS.join(', ')}`),
+  query('search').optional().trim().isLength({ max: 50 }).withMessage('search max 50 characters'),
 ];
+
+export const statsRules = [query('months').optional().isInt({ min: 1, max: 24 }).withMessage('months must be 1-24')];
 
 export const createPaymentRules = [
   mongoId('bookingId'),
