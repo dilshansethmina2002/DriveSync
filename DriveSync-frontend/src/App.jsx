@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VehicleCatalog from './pages/VehicleCatalog';
+
 
 // ---- Member 3: Finance & Operations ----
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -54,6 +56,10 @@ function App() {
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
+
+
+        <Route path="/catalog" element={<VehicleCatalog />} />
+
       </Routes>
     </Router>
   );
