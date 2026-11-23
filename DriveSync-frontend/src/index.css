@@ -1,3 +1,39 @@
+@import "tailwindcss";
+
+/* =============================================================
+   DriveSync design tokens (from the team colour palette PDF)
+   Tailwind v4 turns each --color-* into utility classes:
+     --color-ds-royal  ->  bg-ds-royal, text-ds-royal, border-ds-royal ...
+   The "ds-" prefix keeps them separate from Tailwind's own colours.
+   ============================================================= */
+@theme {
+  --color-ds-royal: #204ec6;   /* Royal Blue        - primary buttons, active states */
+  --color-ds-medium: #2e52b2;  /* Medium Blue       - button hover */
+  --color-ds-deep: #0b1b75;    /* Deep Navy Blue    - sidebar gradient */
+  --color-ds-steel: #4c6ec5;   /* Soft Steel Blue   - secondary accents */
+  --color-ds-navy: #142654;    /* Dark Navy         - sidebar, dark buttons */
+  --color-ds-sky: #5c93e8;     /* Sky Blue          - charts, highlights */
+  --color-ds-cyan: #4db6e5;    /* Cyan              - logo "Sync", active indicator */
+  --color-ds-link: #3b6fd8;    /* Bright Blue       - links */
+  --color-ds-surface: #f3f5f8; /* Cool Gray         - page & input background */
+  --color-ds-ink: #1e2432;     /* Charcoal          - headings */
+  --color-ds-muted: #7a8292;   /* Muted Gray        - subtitles, placeholders */
+}
+
+/* Smooth fade-in used by modals and drawers */
+@keyframes ds-fade-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.ds-animate-in {
+  animation: ds-fade-in 0.18s ease-out;
+}
+
+/* Print: only the receipt is printed (see PaymentReceipt.jsx) */
+@media print {
+  @page { margin: 12mm; }
+  body { background: #fff !important; }
+}
 :root {
   --bg-outer: #204EC6;
   --bg-panel-blue: #2E52B2;
@@ -25,5 +61,3 @@ body {
   background-color: var(--input-bg);
   color: var(--text-dark);
 }
-
-@import "tailwindcss";

@@ -99,7 +99,8 @@ const listMaintenance = async (filter, query) => {
   if (query.type) filter.maintenanceType = String(query.type);
 
   const [records, total] = await Promise.all([
-    Maintenance.find(filter).sort({ startDate: -1 }).skip(skip).limit(limit),
+    // populate = also bring the vehicle's name and registration number (same database)
+    Maintenance.find(filter).populate('vehicle', 'vehicleName registrationNumber currentStatus condition').sort({ startDate: -1 }).skip(skip).limit(limit),
     Maintenance.countDocuments(filter),
   ]);
 
@@ -117,7 +118,7 @@ export const getVehicleMaintenanceHistory = async (vehicleId, query) => {
 export const getAllMaintenance = (query) => listMaintenance({}, query);
 
 export const getMaintenanceById = async (maintenanceId) => {
-  const record = await Maintenance.findOne({ maintenanceId });
+  const record = await Maintenance.findOne({ maintenanceId }).populate('vehicle', 'vehicleName registrationNumber currentStatus condition');
   if (!record) throw new AppError(`Maintenance record ${maintenanceId} not found`, 404);
   return record;
 };

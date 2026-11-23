@@ -40,10 +40,19 @@ const findPaginated = async (filter, query) => {
   return { payments, pagination: buildPaginationMeta(page, limit, total) };
 };
 
-/** Optional filters shared by list endpoints: ?status=Successful&type=Security Deposit */
+// Escape regex special characters so a search like "PAY-.*" is treated as plain text
+const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Optional filters shared by list endpoints: ?status=Successful&type=Security Deposit&method=Cash&search=PAY-2026 */
 const applyListFilters = (filter, query) => {
   if (query.status) filter.paymentStatus = String(query.status);
   if (query.type) filter.paymentType = String(query.type);
+  if (query.method) filter.paymentMethod = String(query.method);
+  if (query.search) {
+    // Partial, case-insensitive match on the IDs people usually search for
+    const regex = new RegExp(escapeRegex(String(query.search)), 'i');
+    filter.$or = [{ paymentId: regex }, { bookingId: regex }, { customerId: regex }, { receiptNumber: regex }];
+  }
   return filter;
 };
 
@@ -166,6 +175,96 @@ export const getPaymentsByCustomer = async (customerId, query, user) => {
 };
 
 export const getAllPayments = async (query) => findPaginated(applyListFilters({}, query), query);
+
+/**
+ * Dashboard statistics (admin).
+ * Revenue rules:
+ *   gross collected = amount of every payment that was ever Successful (now Successful or Refunded)
+ *   net revenue     = gross collected - money refunded
+ *   deposits held   = Security Deposits that are Successful (not yet returned)
+ */
+export const getPaymentStats = async ({ months = 6 } = {}) => {
+  const collected = { paymentStatus: { $in: ['Successful', 'Refunded'] } };
+  const refundOf = { $ifNull: ['$refund.refundAmount', 0] };
+
+  // Start of the month, (months - 1) months ago -> e.g. the last 6 months including this one
+  const since = new Date();
+  since.setUTCDate(1);
+  since.setUTCHours(0, 0, 0, 0);
+  since.setUTCMonth(since.getUTCMonth() - (months - 1));
+
+  const [byStatus, byType, byMethod, monthly, recent, depositsHeld] = await Promise.all([
+    // How many payments (and how much money) in each status
+    Payment.aggregate([{ $group: { _id: '$paymentStatus', count: { $sum: 1 }, amount: { $sum: '$amount' } } }]),
+    // Money per payment type (only collected payments)
+    Payment.aggregate([
+      { $match: collected },
+      { $group: { _id: '$paymentType', gross: { $sum: '$amount' }, refunded: { $sum: refundOf }, count: { $sum: 1 } } },
+    ]),
+    // Popular payment methods
+    Payment.aggregate([{ $match: collected }, { $group: { _id: '$paymentMethod', count: { $sum: 1 } } }]),
+    // Revenue per month (YYYY-MM)
+    Payment.aggregate([
+      { $match: { ...collected, paymentDate: { $gte: since } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m', date: '$paymentDate' } },
+          gross: { $sum: '$amount' },
+          refunded: { $sum: refundOf },
+          rental: { $sum: { $cond: [{ $eq: ['$paymentType', 'Rental Payment'] }, '$amount', 0] } },
+          deposits: { $sum: { $cond: [{ $eq: ['$paymentType', 'Security Deposit'] }, '$amount', 0] } },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
+    Payment.find().sort({ createdAt: -1 }).limit(6),
+    // Security deposits we are still holding (Successful = not yet refunded)
+    Payment.aggregate([
+      { $match: { paymentStatus: 'Successful', paymentType: 'Security Deposit' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]),
+  ]);
+
+  const statusMap = Object.fromEntries(byStatus.map((s) => [s._id, s]));
+  const typeMap = Object.fromEntries(byType.map((t) => [t._id, t]));
+  const round = (n) => Math.round(n * 100) / 100;
+  const gross = byType.reduce((sum, t) => sum + t.gross, 0);
+  const refunded = byType.reduce((sum, t) => sum + t.refunded, 0);
+
+  // Fill months with no payments with zeros, so the chart has no gaps
+  const monthlyMap = Object.fromEntries(monthly.map((m) => [m._id, m]));
+  const monthlyRevenue = [];
+  for (let i = 0; i < months; i += 1) {
+    const d = new Date(since);
+    d.setUTCMonth(since.getUTCMonth() + i);
+    const key = d.toISOString().slice(0, 7);
+    const m = monthlyMap[key];
+    monthlyRevenue.push({
+      month: key,
+      revenue: round(m ? m.gross - m.refunded : 0),
+      rental: round(m?.rental || 0),
+      deposits: round(m?.deposits || 0),
+    });
+  }
+
+  return {
+    totalPayments: byStatus.reduce((sum, s) => sum + s.count, 0),
+    grossCollected: round(gross),
+    totalRefunded: round(refunded),
+    netRevenue: round(gross - refunded),
+    rentalRevenue: round((typeMap['Rental Payment']?.gross || 0) - (typeMap['Rental Payment']?.refunded || 0)),
+    depositsHeld: round(depositsHeld[0]?.total || 0),
+    totalDepositsCollected: round(typeMap['Security Deposit']?.gross || 0),
+    statusBreakdown: ['Successful', 'Pending', 'Failed', 'Refunded'].map((status) => ({
+      status,
+      count: statusMap[status]?.count || 0,
+      amount: round(statusMap[status]?.amount || 0),
+    })),
+    methodBreakdown: byMethod.map((m) => ({ method: m._id, count: m.count })).sort((a, b) => b.count - a.count),
+    monthlyRevenue,
+    recentTransactions: recent,
+  };
+};
 
 /** Totals for one booking: how much was paid, held as deposit, refunded */
 export const getBookingSummary = async (bookingId, user) => {
