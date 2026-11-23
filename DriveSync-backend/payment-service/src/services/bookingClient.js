@@ -5,6 +5,7 @@
 //  If we need booking data we ask the Booking Service's API.
 //
 //  Booking Service contract used here (from Member 2's code):
+//    GET   /api/bookings/:id             -> { success, data: booking }
 //    GET   /api/bookings?userId=<id>     -> { success, data: [booking, ...] }
 //    PATCH /api/bookings/:id/status      body { status: "Confirmed" }
 //  Booking fields: _id, userId, vehicleId, totalPrice, status
@@ -23,19 +24,27 @@ const internalHeaders = () => ({
 
 /**
  * Fetch one booking from the Booking Service.
- * Uses the list endpoint filtered by userId, because that is what
- * the Booking Service currently exposes. If Member 2 later adds
- * GET /api/bookings/:id, only this function needs to change.
+ * Attempts direct GET /api/bookings/:id first; falls back to list by userId.
  */
 export const getBooking = async (bookingId, customerId) => {
-  const url = `${config.bookingServiceUrl}/api/bookings?userId=${encodeURIComponent(customerId)}`;
+  // 1. Try direct GET /api/bookings/:id (Member 2's endpoint)
+  try {
+    const directUrl = `${config.bookingServiceUrl}/api/bookings/${encodeURIComponent(bookingId)}`;
+    const directRes = await fetch(directUrl, { headers: internalHeaders(), signal: AbortSignal.timeout(TIMEOUT_MS) });
+    if (directRes.ok) {
+      const body = await directRes.json();
+      if (body.data) return body.data;
+    }
+  } catch {
+    // If direct lookup fails, fall through to user list lookup
+  }
 
+  // 2. Fallback: GET /api/bookings?userId=...
+  const url = `${config.bookingServiceUrl}/api/bookings?userId=${encodeURIComponent(customerId)}`;
   let response;
   try {
-    // AbortSignal.timeout stops waiting if the other service hangs
     response = await fetch(url, { headers: internalHeaders(), signal: AbortSignal.timeout(TIMEOUT_MS) });
   } catch {
-    // 503 = "a service we depend on is unavailable"
     throw new AppError('Booking Service is unavailable. Please try again later.', 503);
   }
 
@@ -50,8 +59,7 @@ export const getBooking = async (bookingId, customerId) => {
 
 /**
  * Tell the Booking Service the booking is paid -> "Confirmed".
- * This is "best effort": if it fails we log it but the payment
- * itself is still saved (money was already taken).
+ * Best-effort update with internal x-service-key authentication.
  */
 export const confirmBooking = async (bookingId) => {
   try {

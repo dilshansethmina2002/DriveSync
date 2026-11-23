@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 
 const BookingModal = ({ vehicle, onClose }) => {
+    const navigate = useNavigate();
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [statusMessage, setStatusMessage] = useState(null);
     const [isError, setIsError] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [createdBooking, setCreatedBooking] = useState(null);
 
     // Calculate total days and price
     const calculateTotal = () => {
@@ -25,17 +28,27 @@ const BookingModal = ({ vehicle, onClose }) => {
         setSubmitting(true);
 
         try {
-            // Replace with actual logged-in userId from Member 1's Auth context/localStorage
-            const mockUserId = localStorage.getItem('userId') || '65f1a2b3c4d5e6f7a8b9c0d1';
+            // Retrieve authenticated user from localStorage (saved by Member 1's Login)
+            const userStr = localStorage.getItem('user');
+            const currentUser = userStr ? JSON.parse(userStr) : null;
+            const actualUserId = currentUser?.id || currentUser?._id || localStorage.getItem('userId');
 
-            await apiClient.post('/bookings', {
-                userId: mockUserId,
+            if (!actualUserId) {
+                setIsError(true);
+                setStatusMessage('Please sign in before making a reservation.');
+                return;
+            }
+
+            const res = await apiClient.post('/bookings', {
+                userId: actualUserId,
                 vehicleId: vehicle._id,
                 startDate,
                 endDate,
                 totalPrice
             });
 
+            const booking = res.data?.data;
+            setCreatedBooking(booking);
             setIsError(false);
             setStatusMessage('Reservation confirmed! Proceed to payment.');
         } catch (error) {
@@ -136,22 +149,45 @@ const BookingModal = ({ vehicle, onClose }) => {
                         </div>
                     )}
 
-                    <button
-                        type="submit"
-                        disabled={submitting || totalPrice <= 0}
-                        style={{
-                            backgroundColor: totalPrice <= 0 ? 'var(--text-muted)' : 'var(--btn-primary)',
-                            color: 'var(--bg-white)',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '0.9rem',
-                            fontWeight: '600',
-                            cursor: totalPrice <= 0 ? 'not-allowed' : 'pointer',
-                            marginTop: '0.5rem'
-                        }}
-                    >
-                        {submitting ? 'Checking Availability...' : 'Confirm Reservation'}
-                    </button>
+                    {createdBooking ? (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onClose();
+                                navigate('/payments/checkout', { state: { bookingId: createdBooking._id, vehicleId: vehicle._id, totalPrice } });
+                            }}
+                            style={{
+                                backgroundColor: 'var(--bg-outer)',
+                                color: 'var(--bg-white)',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '0.9rem',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                marginTop: '0.5rem',
+                                textAlign: 'center'
+                            }}
+                        >
+                            Proceed to Payment &rarr;
+                        </button>
+                    ) : (
+                        <button
+                            type="submit"
+                            disabled={submitting || totalPrice <= 0}
+                            style={{
+                                backgroundColor: totalPrice <= 0 ? 'var(--text-muted)' : 'var(--btn-primary)',
+                                color: 'var(--bg-white)',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '0.9rem',
+                                fontWeight: '600',
+                                cursor: totalPrice <= 0 ? 'not-allowed' : 'pointer',
+                                marginTop: '0.5rem'
+                            }}
+                        >
+                            {submitting ? 'Checking Availability...' : 'Confirm Reservation'}
+                        </button>
+                    )}
                 </form>
             </div>
         </div>
