@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -21,7 +21,7 @@ import VehicleReturns from './pages/fleet/VehicleReturns';
 
 function App() {
   return (
-    <Router>
+    <>
       {/* Toaster එක මෙහි දැමූ විට මුළු ඇප් එකේම ඕනෑම තැනක toast වැඩ කරයි */}
       <Toaster position="top-right" reverseOrder={false} toastOptions={{ style: { borderRadius: '12px', fontSize: '14px' } }} />
 
@@ -61,7 +61,7 @@ function App() {
         <Route path="/catalog" element={<VehicleCatalog />} />
 
       </Routes>
-    </Router>
+    </>
   );
 }
 

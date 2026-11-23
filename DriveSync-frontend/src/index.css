@@ -50,14 +50,10 @@
   --text-muted: #7A8292;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-body {
-  background-color: var(--input-bg);
-  color: var(--text-dark);
+@layer base {
+  body {
+    background-color: var(--input-bg);
+    color: var(--text-dark);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
 }
