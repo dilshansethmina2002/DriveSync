@@ -2,8 +2,11 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import AuthBook from './pages/AuthBook';
 import VehicleCatalog from './pages/VehicleCatalog';
+import VehiclesPage from './pages/VehiclesPage';
+import PackagesPage from './pages/PackagesPage';
 import MyBookings from './pages/MyBookings';
 import Profile from './pages/Profile';
+import Contact from './pages/Contact';
 import PublicLayout from './components/layout/PublicLayout';
 
 
@@ -20,6 +23,10 @@ import FleetDashboard from './pages/fleet/FleetDashboard';
 import VehicleManagement from './pages/fleet/VehicleManagement';
 import MaintenanceManagement from './pages/fleet/MaintenanceManagement';
 import VehicleReturns from './pages/fleet/VehicleReturns';
+import AdminCatalog from './pages/admin/AdminCatalog';
+import AdminPackages from './pages/admin/AdminPackages';
+import AdminBookings from './pages/admin/AdminBookings';
+import AdminUsers from './pages/admin/AdminUsers';
 
 function App() {
   return (
@@ -31,6 +38,9 @@ function App() {
         {/* ---- Public Routes (No login required) ---- */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<VehicleCatalog isPublic />} />
+          <Route path="/vehicles" element={<VehiclesPage />} />
+          <Route path="/packages" element={<PackagesPage />} />
+          <Route path="/contact" element={<Contact />} />
         </Route>
 
         <Route path="/login" element={<AuthBook />} />
@@ -52,6 +62,10 @@ function App() {
 
             {/* Admins only */}
             <Route element={<RequireRole roles={['Admin']} />}>
+              <Route path="/admin/catalog" element={<AdminCatalog />} />
+              <Route path="/admin/packages" element={<AdminPackages />} />
+              <Route path="/admin/bookings" element={<AdminBookings />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/payments/dashboard" element={<PaymentDashboard />} />
               <Route path="/payments/refunds" element={<RefundManagement />} />
               <Route path="/fleet/dashboard" element={<FleetDashboard />} />
