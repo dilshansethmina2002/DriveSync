@@ -20,6 +20,10 @@ import FleetDashboard from './pages/fleet/FleetDashboard';
 import VehicleManagement from './pages/fleet/VehicleManagement';
 import MaintenanceManagement from './pages/fleet/MaintenanceManagement';
 import VehicleReturns from './pages/fleet/VehicleReturns';
+import AdminCatalog from './pages/admin/AdminCatalog';
+import AdminPackages from './pages/admin/AdminPackages';
+import AdminBookings from './pages/admin/AdminBookings';
+import AdminUsers from './pages/admin/AdminUsers';
 
 function App() {
   return (
@@ -52,6 +56,10 @@ function App() {
 
             {/* Admins only */}
             <Route element={<RequireRole roles={['Admin']} />}>
+              <Route path="/admin/catalog" element={<AdminCatalog />} />
+              <Route path="/admin/packages" element={<AdminPackages />} />
+              <Route path="/admin/bookings" element={<AdminBookings />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/payments/dashboard" element={<PaymentDashboard />} />
               <Route path="/payments/refunds" element={<RefundManagement />} />
               <Route path="/fleet/dashboard" element={<FleetDashboard />} />
