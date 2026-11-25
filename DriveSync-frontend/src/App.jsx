@@ -4,6 +4,7 @@ import AuthBook from './pages/AuthBook';
 import VehicleCatalog from './pages/VehicleCatalog';
 import MyBookings from './pages/MyBookings';
 import Profile from './pages/Profile';
+import Contact from './pages/Contact';
 import PublicLayout from './components/layout/PublicLayout';
 
 
@@ -35,6 +36,9 @@ function App() {
         {/* ---- Public Routes (No login required) ---- */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<VehicleCatalog isPublic />} />
+          <Route path="/vehicles" element={<VehicleCatalog isPublic />} />
+          <Route path="/packages" element={<VehicleCatalog isPublic />} />
+          <Route path="/contact" element={<Contact />} />
         </Route>
 
         <Route path="/login" element={<AuthBook />} />
