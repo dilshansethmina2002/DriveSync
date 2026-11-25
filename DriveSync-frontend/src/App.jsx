@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import AuthBook from './pages/AuthBook';
 import VehicleCatalog from './pages/VehicleCatalog';
 import MyBookings from './pages/MyBookings';
+import Profile from './pages/Profile';
 import PublicLayout from './components/layout/PublicLayout';
 
 
@@ -44,6 +45,7 @@ function App() {
             {/* Customers and admins */}
             <Route path="/catalog" element={<VehicleCatalog />} />
             <Route path="/bookings" element={<MyBookings />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/payments/checkout" element={<Checkout />} />
             <Route path="/payments/history" element={<PaymentHistory />} />
             <Route path="/payments/:paymentId/receipt" element={<PaymentReceipt />} />
