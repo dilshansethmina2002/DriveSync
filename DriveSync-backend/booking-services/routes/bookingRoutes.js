@@ -9,7 +9,19 @@ const CATALOG_SERVICE_URL = process.env.CATALOG_SERVICE_URL || 'http://localhost
 // 1. Create a reservation with availability & date collision checks
 bookingRouter.post('/', verifyToken, async (req, res) => {
   try {
-    const { vehicleId, startDate, endDate, totalPrice } = req.body;
+    const {
+      vehicleId,
+      startDate,
+      endDate,
+      pickupTime,
+      returnTime,
+      pickupLocation,
+      packageId,
+      packageName,
+      driverRequired,
+      notes,
+      totalPrice
+    } = req.body;
     // Use authenticated user's ID from JWT payload, fallback to body if provided
     const userId = req.user?.id || req.user?._id || req.body.userId;
 
@@ -61,7 +73,7 @@ bookingRouter.post('/', verifyToken, async (req, res) => {
     // Overlap condition: Existing active booking starts before requested end AND ends after requested start
     const conflictingBooking = await Booking.findOne({
       vehicleId,
-      status: { $in: ['Pending', 'Confirmed'] },
+      status: { $in: ['Pending', 'Confirmed', 'Ongoing'] },
       startDate: { $lt: requestedEnd },
       endDate: { $gt: requestedStart }
     });
@@ -79,6 +91,13 @@ bookingRouter.post('/', verifyToken, async (req, res) => {
       vehicleId,
       startDate: requestedStart,
       endDate: requestedEnd,
+      pickupTime: pickupTime || '09:00',
+      returnTime: returnTime || '18:00',
+      pickupLocation: pickupLocation || '',
+      packageId: mongoose.isValidObjectId(packageId) ? packageId : null,
+      packageName: packageName || '',
+      driverRequired: Boolean(driverRequired),
+      notes: notes || '',
       totalPrice: Number(totalPrice) || 0,
       status: 'Pending'
     });
@@ -140,11 +159,11 @@ bookingRouter.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// 4. Update booking status (Pending, Confirmed, Cancelled, Completed)
+// 4. Update booking status (Pending, Confirmed, Ongoing, Completed, Cancelled)
 bookingRouter.patch('/:id/status', verifyToken, async (req, res) => {
   try {
     const { status } = req.body;
-    const allowedStatuses = ['Pending', 'Confirmed', 'Cancelled', 'Completed'];
+    const allowedStatuses = ['Pending', 'Confirmed', 'Ongoing', 'Completed', 'Cancelled'];
 
     if (!allowedStatuses.includes(status)) {
       return res.status(400).json({

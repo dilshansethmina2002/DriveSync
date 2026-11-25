@@ -7,7 +7,7 @@ const catalogRouter = express.Router();
 // PUBLIC: Get vehicles with keyword search & filters
 catalogRouter.get('/', async (req, res) => {
   try {
-    const { search, category, location, minPrice, maxPrice, isAvailable } = req.query;
+    const { search, category, location, minPrice, maxPrice, isAvailable, transmission, status } = req.query;
     let query = {};
 
     if (search) {
@@ -18,8 +18,10 @@ catalogRouter.get('/', async (req, res) => {
     }
 
     if (category) query.category = { $regex: `^${category}$`, $options: 'i' };
+    if (transmission) query.transmission = { $regex: `^${transmission}$`, $options: 'i' };
     if (location) query.location = { $regex: `^${location}$`, $options: 'i' };
     if (isAvailable !== undefined) query.isAvailable = isAvailable === 'true';
+    if (status) query.status = status;
 
     if (minPrice || maxPrice) {
       query.dailyRate = {};
@@ -103,10 +105,20 @@ catalogRouter.put('/:id', verifyToken, async (req, res) => {
 // PROTECTED: Update vehicle availability status
 catalogRouter.patch('/:id/availability', verifyToken, async (req, res) => {
   try {
-    const { isAvailable } = req.body;
+    const { isAvailable, status } = req.body;
+    const updateData = {};
+    if (typeof isAvailable === 'boolean') {
+      updateData.isAvailable = isAvailable;
+      updateData.status = isAvailable ? 'Available' : (status || 'Rented');
+    }
+    if (status) {
+      updateData.status = status;
+      updateData.isAvailable = status === 'Available';
+    }
+
     const updatedVehicle = await Vehicle.findByIdAndUpdate(
       req.params.id,
-      { isAvailable },
+      updateData,
       { new: true }
     );
 

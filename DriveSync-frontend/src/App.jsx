@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import AuthBook from './pages/AuthBook';
 import VehicleCatalog from './pages/VehicleCatalog';
 import MyBookings from './pages/MyBookings';
+import PublicLayout from './components/layout/PublicLayout';
 
 
 // ---- Member 3: Finance & Operations ----
@@ -26,14 +27,19 @@ function App() {
       <Toaster position="top-right" reverseOrder={false} toastOptions={{ style: { borderRadius: '12px', fontSize: '14px' } }} />
 
       <Routes>
+        {/* ---- Public Routes (No login required) ---- */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<VehicleCatalog isPublic />} />
+        </Route>
+
         <Route path="/login" element={<AuthBook />} />
         <Route path="/register" element={<AuthBook />} />
         <Route path="/dev-login" element={<DevLogin />} />
 
-        {/* ---- Member 3 pages: need a logged-in user, shown inside the dashboard layout ---- */}
+        {/* ---- Protected Customer & Admin Routes (inside DashboardLayout) ---- */}
         <Route element={<RequireAuth />}>
           <Route element={<DashboardLayout />}>
-            <Route path="/" element={<HomeRedirect />} />
+            <Route path="/dashboard" element={<HomeRedirect />} />
 
             {/* Customers and admins */}
             <Route path="/catalog" element={<VehicleCatalog />} />

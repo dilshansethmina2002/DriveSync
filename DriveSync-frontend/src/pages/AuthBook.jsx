@@ -88,16 +88,25 @@ const AuthBook = () => {
                 password: loginPassword,
             });
 
+            const loggedUser = response.data.user;
             localStorage.setItem('token', response.data.token);
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+            localStorage.setItem('user', JSON.stringify(loggedUser));
 
             toast.success('Successfully logged in!', {
                 style: { background: '#08327d', color: '#fff' },
             });
 
+            const returnTo = location.state?.from;
+            const pendingVehicleId = location.state?.vehicleId;
+            const isAdminUser = String(loggedUser?.role || '').toLowerCase() === 'admin';
+
             setTimeout(() => {
-                navigate('/');
-            }, 1200);
+                if (returnTo) {
+                    navigate(returnTo, { replace: true, state: { vehicleId: pendingVehicleId } });
+                } else {
+                    navigate(isAdminUser ? '/payments/dashboard' : '/catalog', { replace: true });
+                }
+            }, 1000);
         } catch (error) {
             const errorMsg = error.response?.data?.message || 'Login failed. Please try again.';
             toast.error(errorMsg);

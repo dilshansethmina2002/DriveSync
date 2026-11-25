@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import catalogRoutes from './routes/catalogRoutes.js';
+import packageRoutes from './routes/packageRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -29,7 +30,8 @@ app.get('/api/catalog/health', (_req, res) => {
   });
 });
 
-// Routes
+// Routes (mount /packages before /:id routes)
+app.use('/api/catalog/packages', packageRoutes);
 app.use('/api/catalog', catalogRoutes);
 
 const PORT = process.env.PORT || 5002;

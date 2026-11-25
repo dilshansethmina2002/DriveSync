@@ -5,7 +5,10 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
-    role: { type: String, default: 'Customer', enum: ['Customer', 'Admin'] },
+    role: { type: String, default: 'Customer', enum: ['Customer', 'Fleet Manager', 'Admin'] },
+    phone: { type: String, default: '', trim: true },
+    address: { type: String, default: '', trim: true },
+    isActive: { type: Boolean, default: true },
     
     // Document Verification Fields
     licenseNumber: { type: String, default: '', trim: true },

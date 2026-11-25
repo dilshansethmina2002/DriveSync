@@ -64,6 +64,10 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid credentials." });
         }
 
+        if (user.isActive === false) {
+            return res.status(403).json({ success: false, message: "Your account has been suspended. Please contact an administrator." });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ success: false, message: "Invalid credentials." });
@@ -228,11 +232,77 @@ export const getPendingVerifications = async (req, res) => {
     }
 };
 
-// 7. Admin: Get All Users
+// 7. Admin: Get All Users (with search & role filter)
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-password').sort({ createdAt: -1 });
+        const { search, role } = req.query;
+        const query = {};
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
+            ];
+        }
+        if (role) query.role = role;
+
+        const users = await User.find(query).select('-password').sort({ createdAt: -1 });
         res.status(200).json({ success: true, count: users.length, data: users });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Server Error", error: err.message });
+    }
+};
+
+// 8. Customer: Update Own Profile (name, phone, address)
+export const updateUserProfile = async (req, res) => {
+    try {
+        const { name, phone, address } = req.body;
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (phone !== undefined) updateData.phone = phone;
+        if (address !== undefined) updateData.address = address;
+
+        const updated = await User.findByIdAndUpdate(req.user.id, updateData, { new: true }).select('-password');
+        if (!updated) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+        res.status(200).json({ success: true, message: "Profile updated successfully.", data: updated });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Server Error", error: err.message });
+    }
+};
+
+// 9. Admin: Update User Role
+export const updateUserRole = async (req, res) => {
+    try {
+        const { role } = req.body;
+        const allowed = ['Customer', 'Fleet Manager', 'Admin'];
+        if (!allowed.includes(role)) {
+            return res.status(400).json({ success: false, message: `Invalid role. Allowed: ${allowed.join(', ')}` });
+        }
+
+        const updated = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-password');
+        if (!updated) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+        res.status(200).json({ success: true, message: `User role updated to ${role}.`, data: updated });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Server Error", error: err.message });
+    }
+};
+
+// 10. Admin: Activate / Suspend User Account
+export const updateUserStatus = async (req, res) => {
+    try {
+        const { isActive } = req.body;
+        if (typeof isActive !== 'boolean') {
+            return res.status(400).json({ success: false, message: "'isActive' (boolean) is required." });
+        }
+
+        const updated = await User.findByIdAndUpdate(req.params.id, { isActive }, { new: true }).select('-password');
+        if (!updated) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+        res.status(200).json({ success: true, message: `User account ${isActive ? 'activated' : 'suspended'}.`, data: updated });
     } catch (err) {
         res.status(500).json({ success: false, message: "Server Error", error: err.message });
     }
