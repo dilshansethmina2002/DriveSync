@@ -214,88 +214,104 @@ export default function HeroSection({ onQuickSearch }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, delay: 0.15 }}
-        className="max-w-5xl mx-auto -mt-12 relative z-20 px-4 sm:px-6"
+        className="max-w-6xl mx-auto -mt-12 relative z-20 px-4 sm:px-6"
       >
         <form
           onSubmit={handleSearch}
-          className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(10,31,68,0.15)] border border-slate-100 p-3 sm:p-4"
+          className="bg-white/95 backdrop-blur-xl rounded-[1.5rem] shadow-[0_24px_60px_rgba(6,19,43,0.18)] border border-slate-200/80 ring-1 ring-white p-2.5 sm:p-3"
         >
-          <div className="grid grid-cols-1 md:grid-cols-5 items-center divide-y md:divide-y-0 md:divide-x divide-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 items-center">
             {/* 1. Location */}
-            <div className="px-3 py-2.5 md:py-1">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-[#0A1F44]">
-                <MapPin className="h-3.5 w-3.5 text-[#00B4D8]" />
-                Location
-              </label>
-              <select
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="mt-1 w-full bg-transparent text-xs font-medium text-slate-600 outline-none cursor-pointer"
-              >
-                <option value="">Where to? (All)</option>
-                <option value="Colombo">Colombo</option>
-                <option value="Kandy">Kandy</option>
-                <option value="Galle">Galle</option>
-                <option value="Airport">BIA Airport</option>
-              </select>
+            <div className="lg:col-span-3 flex items-center gap-3 rounded-2xl px-3.5 py-2.5 hover:bg-slate-50 focus-within:bg-[#F0F9FF] focus-within:ring-2 focus-within:ring-[#00B4D8]/30 transition-all">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#00E5FF]/12 text-[#00B4D8]">
+                <MapPin className="h-4.5 w-4.5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Location
+                </label>
+                <select
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="mt-0.5 w-full bg-transparent text-sm font-bold text-[#0A1F44] outline-none cursor-pointer"
+                >
+                  <option value="">All Locations</option>
+                  <option value="Colombo">Colombo</option>
+                  <option value="Kandy">Kandy</option>
+                  <option value="Galle">Galle</option>
+                  <option value="Airport">BIA Airport</option>
+                </select>
+              </div>
             </div>
 
             {/* 2. Pick-up Date */}
-            <div className="px-3 py-2.5 md:py-1">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-[#0A1F44]">
-                <Calendar className="h-3.5 w-3.5 text-[#00B4D8]" />
-                Pick-up Date
-              </label>
-              <input
-                type="date"
-                value={pickupDate}
-                min={new Date().toISOString().split('T')[0]}
-                onChange={(e) => setPickupDate(e.target.value)}
-                className="mt-1 w-full bg-transparent text-xs font-medium text-slate-600 outline-none cursor-pointer"
-              />
+            <div className="lg:col-span-2 flex items-center gap-3 rounded-2xl px-3.5 py-2.5 hover:bg-slate-50 focus-within:bg-[#F0F9FF] focus-within:ring-2 focus-within:ring-[#00B4D8]/30 transition-all">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#00E5FF]/12 text-[#00B4D8]">
+                <Calendar className="h-4.5 w-4.5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Pick-up Date
+                </label>
+                <input
+                  type="date"
+                  value={pickupDate}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setPickupDate(e.target.value)}
+                  className="mt-0.5 w-full bg-transparent text-xs sm:text-sm font-bold text-[#0A1F44] outline-none cursor-pointer"
+                />
+              </div>
             </div>
 
             {/* 3. Return Date */}
-            <div className="px-3 py-2.5 md:py-1">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-[#0A1F44]">
-                <Calendar className="h-3.5 w-3.5 text-[#00B4D8]" />
-                Return Date
-              </label>
-              <input
-                type="date"
-                value={returnDate}
-                min={pickupDate || new Date().toISOString().split('T')[0]}
-                onChange={(e) => setReturnDate(e.target.value)}
-                className="mt-1 w-full bg-transparent text-xs font-medium text-slate-600 outline-none cursor-pointer"
-              />
+            <div className="lg:col-span-2 flex items-center gap-3 rounded-2xl px-3.5 py-2.5 hover:bg-slate-50 focus-within:bg-[#F0F9FF] focus-within:ring-2 focus-within:ring-[#00B4D8]/30 transition-all">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#00E5FF]/12 text-[#00B4D8]">
+                <Calendar className="h-4.5 w-4.5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Return Date
+                </label>
+                <input
+                  type="date"
+                  value={returnDate}
+                  min={pickupDate || new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  className="mt-0.5 w-full bg-transparent text-xs sm:text-sm font-bold text-[#0A1F44] outline-none cursor-pointer"
+                />
+              </div>
             </div>
 
             {/* 4. Vehicle Type */}
-            <div className="px-3 py-2.5 md:py-1">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-[#0A1F44]">
-                <Car className="h-3.5 w-3.5 text-[#00B4D8]" />
-                Vehicle Type
-              </label>
-              <select
-                value={vehicleType}
-                onChange={(e) => setVehicleType(e.target.value)}
-                className="mt-1 w-full bg-transparent text-xs font-medium text-slate-600 outline-none cursor-pointer"
-              >
-                <option value="">All Types</option>
-                <option value="Sedan">Sedan</option>
-                <option value="SUV">SUV</option>
-                <option value="Van">Van</option>
-                <option value="Luxury">Luxury</option>
-              </select>
+            <div className="lg:col-span-3 flex items-center gap-3 rounded-2xl px-3.5 py-2.5 hover:bg-slate-50 focus-within:bg-[#F0F9FF] focus-within:ring-2 focus-within:ring-[#00B4D8]/30 transition-all">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#00E5FF]/12 text-[#00B4D8]">
+                <Car className="h-4.5 w-4.5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Vehicle Type
+                </label>
+                <select
+                  value={vehicleType}
+                  onChange={(e) => setVehicleType(e.target.value)}
+                  className="mt-0.5 w-full bg-transparent text-sm font-bold text-[#0A1F44] outline-none cursor-pointer"
+                >
+                  <option value="">All Types</option>
+                  <option value="Sedan">Sedan</option>
+                  <option value="SUV">SUV</option>
+                  <option value="Van">Van</option>
+                  <option value="Luxury">Luxury</option>
+                </select>
+              </div>
             </div>
 
             {/* 5. Search Button */}
-            <div className="pt-3 md:pt-0 md:pl-3">
+            <div className="sm:col-span-2 lg:col-span-2">
               <button
                 type="submit"
-                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#0A1F44] px-5 py-3 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-[#0d2858] hover:shadow-[0_6px_20px_rgba(0,180,216,0.35)] cursor-pointer"
+                className="group w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#0A1F44] to-[#0D2B5E] px-5 py-4 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:from-[#00B4D8] hover:to-[#00E5FF] hover:text-[#0A1F44] hover:shadow-[0_10px_28px_rgba(0,180,216,0.35)] cursor-pointer"
               >
-                <Search className="h-4 w-4 text-[#00E5FF]" />
+                <Search className="h-4 w-4 text-[#00E5FF] group-hover:text-[#0A1F44] transition-colors" />
                 Search
               </button>
             </div>

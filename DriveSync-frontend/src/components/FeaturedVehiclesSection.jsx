@@ -139,8 +139,25 @@ export default function FeaturedVehiclesSection({ onViewDetails, onRentNow }) {
   };
 
   return (
-    <section className="bg-gradient-to-b from-white to-[#F8FAFC]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#F8FAFC] via-white to-[#EFF6FF]/60">
+      {/* Subtle Architectural Dot-Matrix Texture */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.045]"
+        style={{
+          backgroundImage: 'radial-gradient(#0A1F44 1.25px, transparent 1.25px)',
+          backgroundSize: '26px 26px',
+        }}
+      />
+
+      {/* Ambient Cyan & Sky Glow Blobs */}
+      <div className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-[#00E5FF]/14 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-[#00B4D8]/12 blur-3xl" />
+
+      {/* Subtle Decorative Rings */}
+      <div className="pointer-events-none absolute -top-32 -right-32 h-[28rem] w-[28rem] rounded-full border border-[#00B4D8]/10" />
+      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[32rem] w-[32rem] rounded-full border border-[#0A1F44]/5" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -205,10 +222,31 @@ export default function FeaturedVehiclesSection({ onViewDetails, onRentNow }) {
             <motion.div
               key={vehicle._id}
               variants={cardVariants}
-              className="bg-white rounded-3xl border border-slate-100 shadow-[0_10px_30px_rgba(10,31,68,0.06)] overflow-hidden group hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,180,216,0.12)] hover:border-[#00B4D8]/40 transition-all duration-300 flex flex-col"
+              className="relative bg-white rounded-3xl border border-slate-100 shadow-[0_10px_30px_rgba(10,31,68,0.06)] overflow-hidden group hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,180,216,0.16)] hover:border-[#00B4D8]/45 transition-all duration-300 flex flex-col"
             >
+              {/* Animated Ambient Background Layer */}
+              <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+                {/* Soft breathing cyan orb */}
+                <motion.div
+                  animate={{
+                    scale: [1, 1.18, 1],
+                    opacity: [0.35, 0.65, 0.35],
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  className="absolute -bottom-12 -right-12 h-40 w-40 rounded-full bg-[#00E5FF]/15 blur-2xl group-hover:bg-[#00E5FF]/30 transition-colors duration-500"
+                />
+                {/* Soft navy-sky top-left accent */}
+                <div className="absolute -top-10 -left-10 h-32 w-32 rounded-full bg-[#0A1F44]/5 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                {/* Diagonal Light Shimmer Sweep on Hover */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-[#00E5FF]/12 to-transparent skew-x-12" />
+              </div>
+
               {/* Image Area */}
-              <div className="relative h-48 overflow-hidden bg-slate-100">
+              <div className="relative z-10 h-48 overflow-hidden bg-slate-100">
                 <img
                   src={vehicle.imageUrl}
                   alt={`${vehicle.brand} ${vehicle.model}`}
@@ -238,7 +276,7 @@ export default function FeaturedVehiclesSection({ onViewDetails, onRentNow }) {
               </div>
 
               {/* Card Body */}
-              <div className="p-5 flex-1 flex flex-col justify-between">
+              <div className="relative z-10 p-5 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 className="text-base font-extrabold text-[#0A1F44] truncate">
                     {vehicle.brand} {vehicle.model}

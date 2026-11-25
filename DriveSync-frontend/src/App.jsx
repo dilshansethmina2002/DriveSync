@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import AuthBook from './pages/AuthBook';
 import VehicleCatalog from './pages/VehicleCatalog';
+import VehiclesPage from './pages/VehiclesPage';
+import PackagesPage from './pages/PackagesPage';
 import MyBookings from './pages/MyBookings';
 import Profile from './pages/Profile';
 import Contact from './pages/Contact';
@@ -36,8 +38,8 @@ function App() {
         {/* ---- Public Routes (No login required) ---- */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<VehicleCatalog isPublic />} />
-          <Route path="/vehicles" element={<VehicleCatalog isPublic />} />
-          <Route path="/packages" element={<VehicleCatalog isPublic />} />
+          <Route path="/vehicles" element={<VehiclesPage />} />
+          <Route path="/packages" element={<PackagesPage />} />
           <Route path="/contact" element={<Contact />} />
         </Route>
 
