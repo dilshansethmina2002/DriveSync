@@ -41,5 +41,5 @@ export function RequireRole({ roles }) {
 }
 
 export function HomeRedirect() {
-  return <Navigate to={isAdmin() ? '/payments/dashboard' : '/payments/checkout'} replace />;
+  return <Navigate to={isAdmin() ? '/payments/dashboard' : '/catalog'} replace />;
 }

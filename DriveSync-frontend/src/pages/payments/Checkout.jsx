@@ -7,8 +7,8 @@
 //
 //  SIMULATION ONLY: no card number / CVV fields exist anywhere.
 // =============================================================
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import {
   Banknote, CalendarRange, Car, CheckCircle2, CreditCard, Landmark, Lock, PencilLine, ReceiptText, RefreshCw, ShieldCheck, Smartphone, Wallet, XCircle, Clock3, Search,
@@ -42,6 +42,8 @@ const EMPTY_MANUAL = { bookingId: '', customerId: '', vehicleId: '', startDate: 
 export default function Checkout() {
   const user = getUser();
   const admin = isAdmin(user);
+  const location = useLocation();
+  const preselectedBookingId = location.state?.bookingId;
 
   // ---------- Bookings (from Booking Service) ----------
   const [customerId, setCustomerId] = useState(admin ? '' : user?.id);
@@ -54,6 +56,16 @@ export default function Checkout() {
   // ---------- Selection ----------
   const [mode, setMode] = useState('booking'); // 'booking' | 'manual'
   const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    if (preselectedBookingId && bookings.length > 0 && !selected) {
+      const match = bookings.find((b) => b._id === preselectedBookingId);
+      if (match) {
+        setMode('booking');
+        setSelected(match);
+      }
+    }
+  }, [preselectedBookingId, bookings, selected]);
   const [manual, setManual] = useState(EMPTY_MANUAL);
   const [errors, setErrors] = useState({});
 

@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import AuthBook from './pages/AuthBook';
 import VehicleCatalog from './pages/VehicleCatalog';
+import MyBookings from './pages/MyBookings';
 
 
 // ---- Member 3: Finance & Operations ----
@@ -26,8 +26,8 @@ function App() {
       <Toaster position="top-right" reverseOrder={false} toastOptions={{ style: { borderRadius: '12px', fontSize: '14px' } }} />
 
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<AuthBook />} />
+        <Route path="/register" element={<AuthBook />} />
         <Route path="/dev-login" element={<DevLogin />} />
 
         {/* ---- Member 3 pages: need a logged-in user, shown inside the dashboard layout ---- */}
@@ -36,6 +36,8 @@ function App() {
             <Route path="/" element={<HomeRedirect />} />
 
             {/* Customers and admins */}
+            <Route path="/catalog" element={<VehicleCatalog />} />
+            <Route path="/bookings" element={<MyBookings />} />
             <Route path="/payments/checkout" element={<Checkout />} />
             <Route path="/payments/history" element={<PaymentHistory />} />
             <Route path="/payments/:paymentId/receipt" element={<PaymentReceipt />} />
@@ -56,10 +58,6 @@ function App() {
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
-
-
-        <Route path="/catalog" element={<VehicleCatalog />} />
-
       </Routes>
     </>
   );

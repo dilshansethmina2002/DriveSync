@@ -35,7 +35,7 @@ export default function Sidebar({ user, open, onClose, onLogout }) {
               <p className="text-lg font-extrabold tracking-tight">
                 Drive<span className="text-ds-cyan">Sync</span>
               </p>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">Finance & Operations</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">Fleet & Rental Hub</p>
             </div>
           </div>
           <button onClick={onClose} className="rounded-lg p-1.5 text-white/70 hover:bg-white/10 lg:hidden" aria-label="Close menu">
