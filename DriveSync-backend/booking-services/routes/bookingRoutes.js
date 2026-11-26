@@ -1,6 +1,7 @@
 import express from 'express';
 import Booking from '../models/Booking.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
+import { producer } from '../config/kafka.js';
 
 const bookingRouter = express.Router();
 const CATALOG_SERVICE_URL = process.env.CATALOG_SERVICE_URL || 'http://localhost:5003/api/catalog';
@@ -61,6 +62,30 @@ bookingRouter.post('/', verifyToken, async (req, res) => {
     });
 
     const savedBooking = await newBooking.save();
+
+    // Step 4: Publish 'booking-created' event to Kafka for Payment Service
+    try {
+      await producer.send({
+        topic: 'booking-created',
+        messages: [
+          {
+            key: savedBooking._id.toString(),
+            value: JSON.stringify({
+              bookingId: savedBooking._id,
+              userId: savedBooking.userId,
+              vehicleId: savedBooking.vehicleId,
+              totalPrice: savedBooking.totalPrice,
+              startDate: savedBooking.startDate,
+              endDate: savedBooking.endDate
+            })
+          }
+        ]
+      });
+      console.log(`[Kafka] Published booking-created for ${savedBooking._id}`);
+    } catch (kafkaErr) {
+      console.error('[Kafka] Failed to publish booking-created:', kafkaErr.message);
+    }
+
     res.status(201).json({ success: true, data: savedBooking });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -103,6 +128,28 @@ bookingRouter.patch('/:id/status', verifyToken, async (req, res) => {
 
     if (!updatedBooking) {
       return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    // Publish 'booking-completed' event to Kafka so Fleet Service can schedule maintenance
+    if (status === 'Completed') {
+      try {
+        await producer.send({
+          topic: 'booking-completed',
+          messages: [
+            {
+              key: updatedBooking._id.toString(),
+              value: JSON.stringify({
+                bookingId: updatedBooking._id,
+                vehicleId: updatedBooking.vehicleId,
+                userId: updatedBooking.userId
+              })
+            }
+          ]
+        });
+        console.log(`[Kafka] Published booking-completed for vehicle ${updatedBooking.vehicleId}`);
+      } catch (kafkaErr) {
+        console.error('[Kafka] Failed to publish booking-completed:', kafkaErr.message);
+      }
     }
 
     res.status(200).json({ success: true, data: updatedBooking });

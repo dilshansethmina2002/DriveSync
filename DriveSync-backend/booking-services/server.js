@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import bookingRoutes from './routes/bookingRoutes.js';
+import { connectKafka } from './config/kafka.js';
+import { startBookingConsumer } from './events/bookingConsumer.js';
 
 dotenv.config();
 const app = express();
@@ -17,8 +19,14 @@ const PORT = process.env.PORT || 5003;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/drivesync_booking_db';
 
 mongoose.connect(MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log('Booking DB Connected');
+    try {
+      await connectKafka();
+      await startBookingConsumer();
+    } catch (err) {
+      console.warn('Kafka connection warning (running in REST-only mode):', err.message);
+    }
     app.listen(PORT, () => console.log(`Booking Service running on port ${PORT}`));
   })
   .catch((err) => console.error('Database connection error:', err));
