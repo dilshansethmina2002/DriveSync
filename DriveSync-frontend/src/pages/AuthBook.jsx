@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { API_BASE_URL } from '../config/appConfig';
 
 const BrandPanel = ({ subtitle, roundedSide = 'left' }) => {
     const roundedClass =
@@ -83,7 +84,7 @@ const AuthBook = () => {
         setLoginLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
                 email: loginEmail,
                 password: loginPassword,
             });
@@ -120,7 +121,7 @@ const AuthBook = () => {
         setRegLoading(true);
 
         try {
-            await axios.post('http://localhost:5000/api/auth/register', {
+            await axios.post(`${API_BASE_URL}/api/auth/register`, {
                 name: regName,
                 email: regEmail,
                 password: regPassword,
