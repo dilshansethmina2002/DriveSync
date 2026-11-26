@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import catalogRoutes from './routes/catalogRoutes.js';
-import packageRoutes from './routes/packageRoutes.js';
+import { connectKafka } from './config/kafka.js';
+import { startCatalogConsumer } from './events/catalogConsumer.js';
 
 dotenv.config();
 const app = express();
@@ -38,8 +39,14 @@ const PORT = process.env.PORT || 5002;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/drivesync_catalog_db';
 
 mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log('✅ Catalog & Inventory DB Connected (drivesync_catalog_db)');
-    app.listen(PORT, () => console.log(`🚀 Catalog Service running on port ${PORT}`));
+  .then(async () => {
+    console.log('Catalog & Inventory DB Connected');
+    try {
+      await connectKafka();
+      await startCatalogConsumer();
+    } catch (err) {
+      console.warn('Kafka connection warning (running in REST-only mode):', err.message);
+    }
+    app.listen(PORT, () => console.log(`Catalog Service running on port ${PORT}`));
   })
   .catch((err) => console.error('❌ Database connection error:', err.message));
