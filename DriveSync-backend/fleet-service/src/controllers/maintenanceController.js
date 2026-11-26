@@ -3,11 +3,33 @@
 // =============================================================
 import { matchedData } from 'express-validator';
 import * as maintenanceService from '../services/maintenanceService.js';
+import { producer } from '../config/kafka.js';
+
+const publishVehicleStatusUpdated = async (vehicleId, status) => {
+  try {
+    await producer.send({
+      topic: 'vehicle-status-updated',
+      messages: [
+        {
+          key: vehicleId.toString(),
+          value: JSON.stringify({ vehicleId, status }),
+        },
+      ],
+    });
+    console.log(`[Kafka] Published vehicle-status-updated (${status}) for ${vehicleId}`);
+  } catch (kafkaErr) {
+    console.error('[Kafka] Failed to publish vehicle-status-updated:', kafkaErr.message);
+  }
+};
 
 // POST /api/fleet/vehicles/:vehicleId/maintenance
 export const recordMaintenance = async (req, res) => {
   const data = matchedData(req, { locations: ['body'] });
   const { record, vehicle } = await maintenanceService.recordMaintenance(req.params.vehicleId, data, req.user);
+
+  // Sync status with Catalog Service (e.g. 'Under Maintenance' -> isAvailable: false)
+  await publishVehicleStatusUpdated(vehicle.vehicleId, vehicle.currentStatus);
+
   res.status(201).json({
     success: true,
     message:
@@ -40,5 +62,9 @@ export const getMaintenance = async (req, res) => {
 export const completeMaintenance = async (req, res) => {
   const data = matchedData(req, { locations: ['body'] });
   const { record, vehicle, message } = await maintenanceService.completeMaintenance(req.params.maintenanceId, data, req.user);
+
+  // Sync status with Catalog Service (e.g. 'Available' -> isAvailable: true)
+  await publishVehicleStatusUpdated(vehicle.vehicleId, vehicle.currentStatus);
+
   res.status(200).json({ success: true, message, data: { maintenance: record, vehicle } });
 };

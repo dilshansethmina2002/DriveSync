@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "concurrently -n \"gateway,auth,catalog,booking,payment,fleet\" -c \"magenta,blue,cyan,yellow,green,red\" \"npm --prefix api-gateway start\" \"npm --prefix auth-service start\" \"npm --prefix catalog-service start\" \"npm --prefix booking-services start\" \"npm --prefix payment-service dev\" \"npm --prefix fleet-service dev\"",
+    "start": "concurrently -n \"gateway,auth,catalog,booking,payment,fleet\" -c \"magenta,blue,cyan,yellow,green,red\" \"npm --prefix api-gateway start\" \"npm --prefix auth-service start\" \"npm --prefix catalog-service start\" \"npm --prefix booking-services start\" \"npm --prefix payment-service run dev\" \"npm --prefix fleet-service run dev\"",
     "dev": "npm start",
     "gateway": "npm --prefix api-gateway start",
     "auth": "npm --prefix auth-service start",

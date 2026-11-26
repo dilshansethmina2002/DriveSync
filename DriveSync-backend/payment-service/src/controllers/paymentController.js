@@ -8,6 +8,33 @@
 // =============================================================
 import { matchedData } from 'express-validator';
 import * as paymentService from '../services/paymentService.js';
+import { producer } from '../config/kafka.js';
+
+// Helper to publish payment-completed event without failing the HTTP response if Kafka is temporarily down
+const publishPaymentCompleted = async (payment) => {
+  if (payment.paymentStatus === 'Successful') {
+    try {
+      await producer.send({
+        topic: 'payment-completed',
+        messages: [
+          {
+            key: payment.bookingId.toString(),
+            value: JSON.stringify({
+              bookingId: payment.bookingId,
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+            }),
+          },
+        ],
+      });
+      console.log(
+        `[Kafka] Published payment-completed (${payment.paymentId}) for Booking ${payment.bookingId}`
+      );
+    } catch (kafkaErr) {
+      console.error('[Kafka] Failed to publish payment-completed:', kafkaErr.message);
+    }
+  }
+};
 
 // POST /api/payments
 export const createPayment = async (req, res) => {
@@ -24,6 +51,10 @@ export const createPayment = async (req, res) => {
     // 202 Accepted: recorded, waiting for confirmation (cash payments)
     return res.status(202).json({ success: true, message: 'Payment recorded and awaiting confirmation', data: payment });
   }
+
+  // Payment is 'Successful' -> notify Booking Service via Kafka
+  await publishPaymentCompleted(payment);
+
   return res.status(201).json({ success: true, message: 'Payment processed successfully', data: payment });
 };
 
@@ -73,6 +104,10 @@ export const getReceipt = async (req, res) => {
 export const updateStatus = async (req, res) => {
   const { status, note } = matchedData(req, { locations: ['body'] });
   const payment = await paymentService.updatePaymentStatus(req.params.paymentId, { status, note });
+
+  // If admin confirmed a Pending payment as 'Successful' -> notify Booking Service via Kafka
+  await publishPaymentCompleted(payment);
+
   res.status(200).json({ success: true, message: `Payment marked as ${payment.paymentStatus}`, data: payment });
 };
 
