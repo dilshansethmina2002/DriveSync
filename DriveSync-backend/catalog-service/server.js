@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import catalogRoutes from './routes/catalogRoutes.js';
 import { connectKafka } from './config/kafka.js';
 import { startCatalogConsumer } from './events/catalogConsumer.js';
+import packageRoutes from './routes/packageRoutes.js';
 
 dotenv.config();
 const app = express();

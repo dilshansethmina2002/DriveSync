@@ -13,6 +13,7 @@ import { authenticate, authorize } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import * as rules from '../validators/paymentValidators.js';
 
+
 const router = Router();
 
 // Every payment route needs a logged-in user (or an internal service)

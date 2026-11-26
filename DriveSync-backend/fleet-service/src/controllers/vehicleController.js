@@ -3,6 +3,24 @@
 // =============================================================
 import { matchedData } from 'express-validator';
 import * as fleetService from '../services/fleetService.js';
+import { producer } from '../config/kafka.js';
+
+const publishVehicleStatusUpdated = async (vehicleId, status) => {
+  try {
+    await producer.send({
+      topic: 'vehicle-status-updated',
+      messages: [
+        {
+          key: vehicleId.toString(),
+          value: JSON.stringify({ vehicleId, status }),
+        },
+      ],
+    });
+    console.log(`[Kafka] Published vehicle-status-updated (${status}) for ${vehicleId}`);
+  } catch (kafkaErr) {
+    console.error('[Kafka] Failed to publish vehicle-status-updated:', kafkaErr.message);
+  }
+};
 
 // POST /api/fleet/vehicles
 export const registerVehicle = async (req, res) => {
@@ -46,6 +64,7 @@ export const updateVehicle = async (req, res) => {
 export const changeStatus = async (req, res) => {
   const { status, reason } = matchedData(req, { locations: ['body'] });
   const vehicle = await fleetService.changeStatus(req.params.vehicleId, status, reason, req.user);
+  await publishVehicleStatusUpdated(vehicle.vehicleId, vehicle.currentStatus);
   res.status(200).json({ success: true, message: `Vehicle status changed to ${vehicle.currentStatus}`, data: vehicle });
 };
 
@@ -53,6 +72,7 @@ export const changeStatus = async (req, res) => {
 export const markUnderMaintenance = async (req, res) => {
   const { reason } = matchedData(req, { locations: ['body'] });
   const vehicle = await fleetService.changeStatus(req.params.vehicleId, 'Under Maintenance', reason, req.user);
+  await publishVehicleStatusUpdated(vehicle.vehicleId, vehicle.currentStatus);
   res.status(200).json({ success: true, message: 'Vehicle marked as Under Maintenance', data: vehicle });
 };
 
@@ -60,6 +80,7 @@ export const markUnderMaintenance = async (req, res) => {
 export const markAvailable = async (req, res) => {
   const { reason } = matchedData(req, { locations: ['body'] });
   const vehicle = await fleetService.changeStatus(req.params.vehicleId, 'Available', reason, req.user);
+  await publishVehicleStatusUpdated(vehicle.vehicleId, vehicle.currentStatus);
   res.status(200).json({ success: true, message: 'Vehicle marked as Available', data: vehicle });
 };
 
@@ -67,6 +88,7 @@ export const markAvailable = async (req, res) => {
 export const returnVehicle = async (req, res) => {
   const data = matchedData(req, { locations: ['body'] });
   const { vehicle, maintenanceRecord } = await fleetService.processReturn(req.params.vehicleId, data, req.user);
+  await publishVehicleStatusUpdated(vehicle.vehicleId, vehicle.currentStatus);
   res.status(200).json({
     success: true,
     message: maintenanceRecord
