@@ -1,11 +1,36 @@
 import express from 'express';
-import { registerUser, loginUser, getUserProfile } from '../controllers/authController.js';
-import { verifyToken } from '../middleware/authMiddleware.js';
+import { 
+    registerUser, 
+    loginUser, 
+    getUserProfile, 
+    updateUserProfile,
+    submitDocumentVerification, 
+    verifyDocumentStatus, 
+    getPendingVerifications,
+    getAllUsers,
+    updateUserRole,
+    updateUserStatus
+} from '../controllers/authController.js';
+import { verifyToken, requireAdmin } from '../middleware/authMiddleware.js';
+import { uploadLicense } from '../middleware/uploadMiddleware.js';
 
 const authrouter = express.Router();
 
+// Public Authentication Endpoints
 authrouter.post('/register', registerUser);
 authrouter.post('/login', loginUser);
+
+// Customer Protected Endpoints
 authrouter.get('/profile', verifyToken, getUserProfile);
+authrouter.put('/profile', verifyToken, updateUserProfile);
+authrouter.post('/verify-document', verifyToken, uploadLicense.single('document'), submitDocumentVerification);
+authrouter.post('/upload-license', verifyToken, uploadLicense.single('document'), submitDocumentVerification);
+
+// Admin Protected Endpoints
+authrouter.get('/admin/verifications', verifyToken, requireAdmin, getPendingVerifications);
+authrouter.patch('/admin/users/:id/verify', verifyToken, requireAdmin, verifyDocumentStatus);
+authrouter.get('/admin/users', verifyToken, requireAdmin, getAllUsers);
+authrouter.patch('/admin/users/:id/role', verifyToken, requireAdmin, updateUserRole);
+authrouter.patch('/admin/users/:id/status', verifyToken, requireAdmin, updateUserStatus);
 
 export default authrouter;

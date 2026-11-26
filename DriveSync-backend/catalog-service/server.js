@@ -12,11 +12,31 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Routes
+// Health Check
+app.get('/health', (_req, res) => {
+  res.status(200).json({ 
+    success: true, 
+    service: 'Catalog & Inventory Service', 
+    status: 'Healthy',
+    dbState: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
+app.get('/api/catalog/health', (_req, res) => {
+  res.status(200).json({ 
+    success: true, 
+    service: 'Catalog & Inventory Service', 
+    status: 'Healthy',
+    dbState: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
+// Routes (mount /packages before /:id routes)
+app.use('/api/catalog/packages', packageRoutes);
 app.use('/api/catalog', catalogRoutes);
 
 const PORT = process.env.PORT || 5002;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/drivesync_catalog_db';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/drivesync_catalog_db';
 
 mongoose.connect(MONGO_URI)
   .then(async () => {
@@ -29,4 +49,4 @@ mongoose.connect(MONGO_URI)
     }
     app.listen(PORT, () => console.log(`Catalog Service running on port ${PORT}`));
   })
-  .catch((err) => console.error('Database connection error:', err));
+  .catch((err) => console.error('❌ Database connection error:', err.message));

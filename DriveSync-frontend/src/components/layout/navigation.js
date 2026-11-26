@@ -2,9 +2,27 @@
 //  Sidebar menu definition
 //  roles: who can see the link ('Admin', 'Customer'). No roles = everyone.
 // =============================================================
-import { CreditCard, FileClock, LayoutDashboard, RotateCcw, Car, Wrench, Undo2, Gauge } from 'lucide-react';
+import { CreditCard, FileClock, LayoutDashboard, RotateCcw, Car, Wrench, Undo2, Gauge, CalendarCheck, Compass, UserCheck, Package, Users, ClipboardList } from 'lucide-react';
 
 export const NAV_SECTIONS = [
+  {
+    title: 'Rentals & Bookings',
+    items: [
+      { to: '/catalog', label: 'Browse Vehicles', icon: Compass },
+      { to: '/bookings', label: 'My Bookings', icon: CalendarCheck, roles: ['Customer'] },
+      { to: '/profile', label: 'Profile & License', icon: UserCheck },
+    ],
+  },
+  {
+    title: 'Admin Management',
+    roles: ['Admin'],
+    items: [
+      { to: '/admin/bookings', label: 'Bookings', icon: ClipboardList, roles: ['Admin'] },
+      { to: '/admin/catalog', label: 'Catalog Vehicles', icon: Car, roles: ['Admin'] },
+      { to: '/admin/packages', label: 'Rental Packages', icon: Package, roles: ['Admin'] },
+      { to: '/admin/users', label: 'Users & Licenses', icon: Users, roles: ['Admin'] },
+    ],
+  },
   {
     title: 'Finance',
     items: [
