@@ -8,24 +8,37 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS for frontend
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+// Enable CORS for frontend (local dev + Vercel production/previews + env overrides)
+const defaultOrigins = [
+  'http://localhost:5173',
+  'https://drivesynccodecraft.vercel.app',
+];
+
+const envOrigins = (process.env.CORS_ORIGIN || '')
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
   .filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or Postman)
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(null, false);
-    },
-    credentials: true,
-  })
-);
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/+$/, '');
+    if (
+      allowedOrigins.includes(cleanOrigin) ||
+      /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(cleanOrigin)
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-service-key', 'x-calling-service'],
+};
+
+app.use(cors(corsOptions));
 
 // Helper to handle proxy errors gracefully when microservices are down
 const handleProxyError = (serviceName) => (err, req, res) => {
